@@ -58,6 +58,12 @@ public class CharacterMovement : MonoBehaviour
 
     }
 
+    public void RestartGame()
+    {
+        startPosition = transform.position;
+        startRotation = transform.rotation;
+    }
+
     void OnTriggerEnter(Collider other)
     {
         if (other.tag == "Enemy")

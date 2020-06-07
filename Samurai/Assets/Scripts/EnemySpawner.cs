@@ -19,7 +19,6 @@ public class EnemySpawner : MonoBehaviour
     public bool roundStart_5 = false;
     public bool roundStart_Final = false;
     public bool winGame = false;
-    //public bool isWaitingForHit;
     public bool preGame = true;
 
     public GameObject enemyHolder;
@@ -118,7 +117,24 @@ public class EnemySpawner : MonoBehaviour
         roundStart_4 = false;
         roundStart_5 = false;
         winGame = false;
-        systemScript.isPaused = false;
+    }
+
+    public void RestartGame()
+    {
+        playerAttack = false;
+
+        StopAllCoroutines();
+        enemiesToKill = 1;
+
+        preGame = true;
+        tutStart_2 = false;
+        tutStart_3 = false;
+        tutStart_4 = false;
+        roundStart_2 = false;
+        roundStart_3 = false;
+        roundStart_4 = false;
+        roundStart_5 = false;
+        winGame = false;
     }
 
     public void StartNextRound(int nextRound)

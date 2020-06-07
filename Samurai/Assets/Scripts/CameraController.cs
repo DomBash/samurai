@@ -18,23 +18,13 @@ public class CameraController : MonoBehaviour
     public Color bgLight; //#F7F7F7
     public Color bgDark; //#3F3F44
 
-    //public Transform ui;
-    //private UIController uiScript;
-    //public Transform system;
-    //private SystemsController systemScript;
-
     void Start()
     {
-        //uiScript = ui.GetComponent<UIController>();
-        //systemScript = system.GetComponent<SystemsController>();
-
-        //m_EventSystem = EventSystem.current;
         OpenMainMenu();
     }
 
     void Update()
     {
-
         transform.RotateAround(target.position, Vector3.up, Input.GetAxis("Xbox X") * speed);
         if (Input.GetMouseButton(2))
         {
@@ -50,14 +40,17 @@ public class CameraController : MonoBehaviour
         transform.rotation = gameRotation;
     }
 
-    /*IEnumerator StartDelay()
-    {
-        yield return new WaitForSeconds(0.1f);
-    }*/
-
     public void ResumeGame()
     {
         cam.orthographic = true;
+        transform.position = gamePosition;
+        transform.rotation = gameRotation;
+    }
+
+    public void RestartGame()//Same as StartGame()
+    {
+        cam.orthographic = true;
+        SetBGLight();
         transform.position = gamePosition;
         transform.rotation = gameRotation;
     }

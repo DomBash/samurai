@@ -59,6 +59,14 @@ public class UIController : MonoBehaviour
         treeTut.SetActive(true);
     }
 
+    public void RestartGame()//Same as Start Game
+    {
+        HideAllMenus();
+        ShowTutorial();
+        HideAllTutorialElements();
+        treeTut.SetActive(true);
+    }
+
     public void OpenMainMenu()
     {
         mainMenu.SetActive(true);

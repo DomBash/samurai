@@ -101,18 +101,15 @@ public class SystemsController : MonoBehaviour
     }
 
     public void StartGame()
-    {
-        isPaused = false;
-        isDead = true;
-        DestroyAllEnemies();
-        DestroyAllSouls();
-        isDead = false;
-        gameStarted = true;
-        canPause = true;
+    {       
         uiScript.StartGame();
         camScript.StartGame();
         spawnScript.StartGame();
         audioScript.StartGame();
+
+        isPaused = false;
+        gameStarted = true;
+        canPause = true;
     }
 
     public void ResumeGame()
@@ -122,6 +119,22 @@ public class SystemsController : MonoBehaviour
         uiScript.HideAllMenus();
         camScript.ResumeGame();
         uiScript.ShowTutorial();
+    }
+
+    public void RestartGame()
+    {
+        DestroyAllEnemies();
+        DestroyAllSouls();
+
+        uiScript.StartGame();
+        playerScript.RestartGame();
+        spawnScript.RestartGame();
+        camScript.RestartGame();
+
+        isDead = false;
+        isPaused = false;
+        gameStarted = true;
+        canPause = true;
     }
 
     //Get Bools ---------------------------------------------
