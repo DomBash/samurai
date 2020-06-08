@@ -27,11 +27,15 @@ public class SystemsController : MonoBehaviour
     private string[] controllerNames;
     private bool isControllerTutorial = false;
     private bool gameStarted = false;
-    private bool canUseSpecial = false;
+    public bool canUseSpecial = false;
     private bool isWaitingForHit = false;
     private bool isPlayerPowered = false;
     private bool isReadyForNextRound = true;
     private bool isTouchingTree = false;
+    private bool isBeingAttacked = false;
+    private bool isFinalAttacking = false;
+    private bool isHA = false;
+    private bool isLA = false;
 
     private int nextRound = 1;
 
@@ -104,7 +108,6 @@ public class SystemsController : MonoBehaviour
     {       
         uiScript.StartGame();
         camScript.StartGame();
-        spawnScript.StartGame();
         audioScript.StartGame();
 
         isPaused = false;
@@ -130,11 +133,15 @@ public class SystemsController : MonoBehaviour
         playerScript.RestartGame();
         spawnScript.RestartGame();
         camScript.RestartGame();
+        audioScript.RestartGame();
 
         isDead = false;
         isPaused = false;
         gameStarted = true;
         canPause = true;
+        nextRound = 1;
+        isReadyForNextRound = true;
+
     }
 
     //Get Bools ---------------------------------------------
@@ -164,6 +171,26 @@ public class SystemsController : MonoBehaviour
         return isTouchingTree;
     }
 
+    public bool GetIsBeingAttacked()
+    {
+        return isBeingAttacked;
+    }
+
+    public bool GetIsFinalAttacking()
+    {
+        return isFinalAttacking;
+    }
+
+    public bool GetIsHA()
+    {
+        return isHA;
+    }
+
+    public bool GetIsLA()
+    {
+        return isLA;
+    }
+
     //Set Bools ----------------------------------------------
 
     public void SetCanUseSpecial(bool parity)
@@ -184,6 +211,26 @@ public class SystemsController : MonoBehaviour
     public void SetIsTouchingTree(bool parity)
     {
         isTouchingTree = parity;
+    }
+
+    public void SetIsBeingAttacked(bool parity)
+    {
+        isBeingAttacked = parity;
+    }
+
+    public void SetIsFinalAttacking(bool parity)
+    {
+        isFinalAttacking = parity;
+    }
+
+    public void SetIsHA(bool parity)
+    {
+        isHA = parity;
+    }
+
+    public void SetIsLA(bool parity)
+    {
+        isLA = parity;
     }
 
     //Animations ----------------------------------------------
@@ -236,8 +283,7 @@ public class SystemsController : MonoBehaviour
     }
 
     public void StartNextRound()//Player collision with tree
-    {
-        SetTreeTouchAnim(true);
+    {        
         playerScript.TouchTree();
         isReadyForNextRound = false;
         spawnScript.StartNextRound(nextRound);
@@ -325,6 +371,13 @@ public class SystemsController : MonoBehaviour
         uiScript.ShowFinalRoundText();
     }
 
+    public void EnemyDeath()
+    {
+        spawnScript.EnemyDeath();
+    }
+
+    //Audio ------------------------------------------------------
+
     public void PlaySword1Audio()
     {
         audioScript.PlaySword1Audio();
@@ -340,6 +393,11 @@ public class SystemsController : MonoBehaviour
         audioScript.PlayDashAudio();
     }
 
+    public void PlayEnemyAttackAudio()
+    {
+        audioScript.PlayEnemyAttackAudio();
+    }
+
     public void PlayDeathAudio()
     {
         audioScript.PlayDeathAudio();
@@ -348,6 +406,11 @@ public class SystemsController : MonoBehaviour
     public Transform GetCamTransform()
     {
         return camScript.GetCamTransform();
+    }
+
+    public Transform GetPlayerTransform()
+    {
+        return playerScript.GetPlayerTransform();
     }
 
     public void Dead(bool isTreeDeath)

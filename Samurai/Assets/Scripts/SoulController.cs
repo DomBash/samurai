@@ -16,8 +16,14 @@ public class SoulController : MonoBehaviour
     private float orbitDist = 3;
     private bool isOnPlayer = false;
 
+    public Transform system;
+    private SystemsController systemScript;
+
     void Start()
     {
+        system = GameObject.Find("Systems").transform;
+        systemScript = system.GetComponent<SystemsController>();
+
         player = GameObject.Find("TheRonin").transform;
         playerScript = player.GetComponent<CharacterMovement>();
         orbitDist = 3f;
@@ -31,7 +37,7 @@ public class SoulController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (playerScript.isPlayerPowered)
+        if (systemScript.GetIsPlayerPowered())
         {
             targetPos = new Vector3(player.position.x, 1.5f, player.position.z);
             orbitDist = 1f;

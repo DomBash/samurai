@@ -6,25 +6,17 @@ using UnityEngine.UI;
 public class CharacterMovement : MonoBehaviour
 {
     private CharacterController characterController;
-
-    private Coroutine la;
-    private Coroutine ha;
-
-    private bool isWalking = false;
-    public bool isFinalAttacking = false;
-    public bool isLA = false;
-    public bool isHA = false;
-    public bool isPlayerPowered = false;
-    private bool canMove = true;
-    private bool canDash = false;
   
     private float gravity = 20.0f;
-    private float heavyAttackWait = 0.5f;
-    private float lightAttackWait = 0.1f;
     private float dashRate = 2f;
     private float nextDashTime = 0f;
+
     private float laRate = 3f;
     private float nextLATime = 0f;
+
+    private float haRate = 1f;
+    private float nextHATime = 0f;
+
     public float speed = 6.0f;
 
     public Transform system;
@@ -46,6 +38,8 @@ public class CharacterMovement : MonoBehaviour
     private Vector3 noMovement = Vector3.zero;
     private Vector3 origin = Vector3.zero;
     private Vector3 dashDirection;
+
+    public bool canMove = true;
     
 
     void Start()
@@ -55,13 +49,12 @@ public class CharacterMovement : MonoBehaviour
         lr = GetComponent<LineRenderer>();
         startPosition = transform.position;
         startRotation = transform.rotation;
-
     }
 
     public void RestartGame()
     {
-        startPosition = transform.position;
-        startRotation = transform.rotation;
+        transform.position = startPosition;
+        transform.rotation = startRotation;
     }
 
     void OnTriggerEnter(Collider other)
@@ -75,43 +68,36 @@ public class CharacterMovement : MonoBehaviour
     public void Dead()
     {
         StopAllCoroutines();
-        isPlayerPowered = false;     
+        systemScript.SetIsPlayerPowered(false);     
         transform.position = startPosition;
         transform.rotation = startRotation;
+    }
+
+    public Transform GetPlayerTransform()
+    {
+        return gameObject.transform;
     }
 
     void Update()
     {
         if (transform.position.y < 0)
             systemScript.Dead(false);
-        if (systemScript.isPaused)
-            canDash = false;
+
         if (!systemScript.isPaused)
         {
-            if (isPlayerPowered)
-                laRate = 8f;
-            
-
-            if (!isFinalAttacking && !systemScript.GetIsTouchingTree())
+            if (!systemScript.GetIsFinalAttacking() && !systemScript.GetIsTouchingTree())
             {
                 if (dodgeTime > 0)
                 {
                     Dodge();
                     return;
                 }
+
                 //if (Input.GetKeyDown(KeyCode.Space) && Time.time >= nextDashTime)
-                if (Input.GetButtonUp("Dash") || Input.GetMouseButtonUp(0) && !canDash)
-                    canDash = true;
-                if (Input.GetButtonDown("Dash") && Time.time >= nextDashTime && canDash)
+                if (Input.GetButtonDown("Dash") && Time.time >= nextDashTime)
                 {
-                    if (la != null)
-                        StopCoroutine(la);
-                    if (ha != null)
-                        StopCoroutine(ha);
-                    isLA = false;
-                    isHA = false;
-                    canMove = true;
-                    systemScript.SetAnimSpeed(1f); 
+                    systemScript.SetIsLA(false);
+                    systemScript.SetIsHA(false);
                     systemScript.SetLAAnim(false);
                     systemScript.SetHAAnim(false);
                     systemScript.SetDashAnim(true);
@@ -123,7 +109,7 @@ public class CharacterMovement : MonoBehaviour
                     nextDashTime = Time.time + 1f / dashRate;
 
                     dashDirection = -transform.right;
-                    //if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D))
+
                     if (Input.GetAxis("Horizontal") != 0 || Input.GetAxis("Vertical") != 0 )
                     {
                         Vector3 forward = systemScript.GetCamTransform().TransformDirection(Vector3.forward);
@@ -145,7 +131,7 @@ public class CharacterMovement : MonoBehaviour
                 }
 
 
-                if (!isLA && !isHA && canMove)
+                if (!systemScript.GetIsLA() && !systemScript.GetIsHA() && canMove)
                 {
 
                     //if (Input.GetMouseButtonDown(0) && Time.time >= nextLATime)//Light Attack
@@ -158,11 +144,11 @@ public class CharacterMovement : MonoBehaviour
                     }
 
                     //if (Input.GetMouseButtonDown(1))//Heavy Attack
-                    if (Input.GetButtonDown("Fire2"))//Heavy Attack
+                    if (Input.GetButtonDown("Fire2") && Time.time >= nextHATime)//Heavy Attack
                     {
-                        canMove = false;
                         systemScript.SetHAAnim(true);
                         systemScript.PlayHeavyAudio();
+                        nextHATime = Time.time + 1f / haRate;
                         return;
                     }
                     //if (Input.GetKeyDown(KeyCode.E) && spawnScript.canUseSpecial)
@@ -189,20 +175,15 @@ public class CharacterMovement : MonoBehaviour
                         }
                         if (moveDirection == noMovement)
                         {
-                            isWalking = false;
-                            systemScript.SetWalkAnim(isWalking);                            
+                            systemScript.SetWalkAnim(false);                            
                         }
                         else
                         {
-                            isWalking = true;
-                            systemScript.SetWalkAnim(isWalking);
+                            systemScript.SetWalkAnim(true);
                         }
 
                     }
-                    // as an acceleration (ms^-2)
                     moveDirection.y -= gravity * Time.deltaTime;
-
-
                     characterController.Move(moveDirection.normalized * speed * Time.deltaTime);
                 }
             }
@@ -211,16 +192,13 @@ public class CharacterMovement : MonoBehaviour
 
     public void TouchTree()
     {
-        if (systemScript.GetIsTouchingTree())
-        {
-            systemScript.SetTreeTouchAnim(true);
-            var lookPos = new Vector3(tree.position.x, transform.position.y, tree.position.z);
-            transform.LookAt(lookPos);
-            var distance = 1.5f;
-            transform.position = (transform.position - tree.position).normalized * distance + tree.position;
-            transform.position = new Vector3(transform.position.x, 0.6f, transform.position.z);
-            transform.rotation *= Quaternion.Euler(0, 90, 0);
-        }
+        var lookPos = new Vector3(tree.position.x, transform.position.y, tree.position.z);
+        transform.LookAt(lookPos);
+        var distance = 1.5f;
+        transform.position = (transform.position - tree.position).normalized * distance + tree.position;
+        transform.position = new Vector3(transform.position.x, 0.6f, transform.position.z);
+        transform.rotation *= Quaternion.Euler(0, 90, 0);
+        systemScript.SetTreeTouchAnim(true);      
     }
 
     void Rotate(Vector3 lookDirection)
@@ -236,55 +214,49 @@ public class CharacterMovement : MonoBehaviour
 
     void startLA()
     {
-        isLA = true;
+        systemScript.SetIsLA(true);
         systemScript.SetIsWaitingForHit(true);
         swordTrail.emitting = true;
-
     }
 
     void endLA()
     {
+        systemScript.SetIsLA(false);
         systemScript.SetIsWaitingForHit(false);
-        la = StartCoroutine(endLAttack());
-    }
-
-    IEnumerator endLAttack()
-    {
-        systemScript.SetAnimSpeed(1f);
-        isLA = false;
         swordTrail.emitting = false;
 
         systemScript.SetLAAnim(false);
-        yield return new WaitForSeconds(lightAttackWait);           
     }
 
     void startHA()
     {
+        systemScript.SetIsHA(true);
         systemScript.SetIsWaitingForHit(true);
-        isHA = true;
     }
 
     void endHA()
     {
+        systemScript.SetIsHA(false);
         systemScript.SetIsWaitingForHit(false);
-        ha = StartCoroutine(endHAttack());
+        systemScript.SetHAAnim(false);
+
     }
 
-    IEnumerator endHAttack()
+    void MovementAbilityOff()
     {
-        isHA = false;
-        systemScript.SetHAAnim(false);
-        yield return new WaitForSeconds(heavyAttackWait);
+        canMove = false;
+    }
+
+    void MovementAbilityOn()
+    {
         canMove = true;
-        
     }
 
     IEnumerator finalAttack()
     {
-        isFinalAttacking = true;
-        isWalking = false;
+        systemScript.SetIsFinalAttacking(true);
         dodgeTime = 0;
-        systemScript.SetWalkAnim(isWalking);
+        systemScript.SetWalkAnim(false);
         origin = transform.position;
         lr.SetPosition(0, transform.position);
 
@@ -294,7 +266,7 @@ public class CharacterMovement : MonoBehaviour
             transform.position = origin;
             yield return new WaitForSeconds(0.1f);
             lr.positionCount = 1;
-            isFinalAttacking = false;
+            systemScript.SetIsFinalAttacking(false);
             yield break;
         }
         var enemies = 20;
@@ -325,8 +297,8 @@ public class CharacterMovement : MonoBehaviour
                 transform.position = origin;
                 lr.positionCount = 1;
                 yield return new WaitForSeconds(0.5f);
-                
-                isFinalAttacking = false;
+
+                systemScript.SetIsFinalAttacking(false);
                 yield break;
             }
         }

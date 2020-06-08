@@ -14,6 +14,7 @@ public class MixerFixer : MonoBehaviour
     public AudioSource deathAudio;
     public AudioSource heavyAudio;
     public AudioSource dashAudio;
+    public AudioSource enemyAttackAudio;
 
     void Start()
     {
@@ -22,6 +23,11 @@ public class MixerFixer : MonoBehaviour
     }
 
     public void StartGame()
+    {
+        PlayLightBG();
+    }
+
+    public void RestartGame()
     {
         PlayLightBG();
     }
@@ -66,6 +72,11 @@ public class MixerFixer : MonoBehaviour
     public void PlayDashAudio()
     {
         dashAudio.PlayDelayed(0f);
+    }
+
+    public void PlayEnemyAttackAudio()
+    {
+        enemyAttackAudio.PlayDelayed(0f);
     }
 
     public void PlayDeathAudio()

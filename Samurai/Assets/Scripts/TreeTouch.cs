@@ -5,7 +5,6 @@ using UnityEngine;
 public class TreeTouch : MonoBehaviour
 {
     public Transform soulHolder;
-    public GameObject finalAttackEffect;
     public Transform system;
     private SystemsController systemScript;
 

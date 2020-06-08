@@ -16,7 +16,6 @@ public class AnimationController : MonoBehaviour
         systemScript = system.GetComponent<SystemsController>();
     }
 
-
     void Update()
     {
         

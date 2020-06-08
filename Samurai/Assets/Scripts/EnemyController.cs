@@ -4,13 +4,6 @@ using UnityEngine;
 
 public class EnemyController : MonoBehaviour
 {
-    private Transform player;
-    private CharacterMovement playerScript;
-    private Transform ground;
-    private EnemySpawner spawnScript;
-    private Transform cam;
-    private CameraController camScript;
-    private Transform target;
     private Vector3 targetPos;
     private Vector3 newTargetPos;
     public float speed = 1f;
@@ -20,41 +13,25 @@ public class EnemyController : MonoBehaviour
     private float attackRange = 3f;
     private bool inCollision = false;
     private GameObject soulHolder;
-    public AudioSource attackAudio;
-
 
     private float step;
     public int health = 4;
 
+    public Animator animator;
+
     private Material particles;
     private Color defaultColor;
 
-    public Animator animator;
-
-    private TreeController treeScript;
-
-    public Transform system;
+    private Transform system;
     private SystemsController systemScript;
 
     void Start()
     {
-        target = GameObject.Find("Tree").transform;
-        player = GameObject.Find("TheRonin").transform;
-        ground = GameObject.Find("Ground").transform;
-        cam = GameObject.Find("Main Camera").transform;
         system = GameObject.Find("Systems").transform;
         soulHolder = GameObject.Find("Soul Holder");
-
-        playerScript = player.GetComponent<CharacterMovement>();
-        spawnScript = ground.GetComponent<EnemySpawner>();
-        treeScript = target.GetComponent<TreeController>();
-        camScript = cam.GetComponent<CameraController>();
         systemScript = system.GetComponent<SystemsController>();
-
-
         particles = gameObject.transform.GetChild(0).GetComponent<ParticleSystemRenderer>().material;
         defaultColor = particles.color;
-
         step = speed * Time.deltaTime;
     }
 
@@ -63,51 +40,49 @@ public class EnemyController : MonoBehaviour
     {
         //print(attackAudio.isPlaying);
 
-        if (!playerScript.isFinalAttacking && !systemScript.isPaused)
+        if (!systemScript.GetIsFinalAttacking() && !systemScript.isPaused)
         {
-            var playerDist = Vector3.Distance(player.transform.position, transform.position);
-            var treeDist = Vector3.Distance(target.transform.position, transform.position);
+            var playerDist = Vector3.Distance(systemScript.GetPlayerTransform().position, transform.position);
+            var treeDist = Vector3.Distance(Vector3.zero, transform.position);
 
             if (playerDist <= attackRange && aggroed) //Aggro and in attack range of player
             {
                 isAttacking = true;
-                attackAudio.PlayDelayed(0f);
-                animator.SetTrigger("Attack");
-                            
+                systemScript.PlayEnemyAttackAudio();
+                animator.SetBool("Attack", true);
                 return;
             }
 
             if (treeDist <= attackRange && !aggroed) //Not aggro and attack range of tree
             {
                 isAttacking = true;
-                attackAudio.PlayDelayed(0f);
-                animator.SetTrigger("Attack");
-                
+                systemScript.PlayEnemyAttackAudio();
+                animator.SetBool("Attack", true);
                 return;
             }
 
-            if (playerDist < treeDist && !spawnScript.playerAttack) //Player is closer than tree and not being attacked
+            if (playerDist < treeDist && !systemScript.GetIsBeingAttacked()) //Player is closer than tree and not being attacked
             {
-                targetPos = player.transform.position;
+                targetPos = systemScript.GetPlayerTransform().position;
                 aggroed = true;
-                spawnScript.playerAttack = true;
+                systemScript.SetIsBeingAttacked(true);
             }
             else if (playerDist < treeDist && aggroed) //Player is closer and aggroed
             {
-                targetPos = player.transform.position;
+                targetPos = systemScript.GetPlayerTransform().position;
             }
             else if (treeDist < playerDist && !isAttacking) //Tree is closer and you arent attacking
             {
-                targetPos = target.transform.position;
+                targetPos = Vector3.zero;
                 if (aggroed)
                 {
-                    spawnScript.playerAttack = false;
+                    systemScript.SetIsBeingAttacked(false);
                     aggroed = false;
                 }
             }
 
             newTargetPos = new Vector3(targetPos.x, transform.position.y, targetPos.z);
-            if (!playerScript.isFinalAttacking && !isAttacking)
+            if (!systemScript.GetIsFinalAttacking() && !isAttacking)
             {
                 transform.position = Vector3.MoveTowards(transform.position, newTargetPos, step);
                 transform.LookAt(newTargetPos);
@@ -127,7 +102,7 @@ public class EnemyController : MonoBehaviour
     void EndAttack()
     {
         isAttacking = false;
-        animator.SetBool("Attack",false);
+        animator.SetBool("Attack", false);
     }
 
     void OnTriggerEnter(Collider other)
@@ -147,15 +122,15 @@ public class EnemyController : MonoBehaviour
 
     void GetHurt(int source)
     {
-        if ((playerScript.isLA || playerScript.isHA) && inCollision && systemScript.GetIsWaitingForHit())
+        if ((systemScript.GetIsLA() || systemScript.GetIsHA()) && inCollision && systemScript.GetIsWaitingForHit())
         {
             //print(source);
             inCollision = false;
             aggroed = true;
             StartCoroutine(HitColorChange());
-            if (playerScript.isLA)
+            if (systemScript.GetIsLA())
                 health -= 1;               
-            if (playerScript.isHA)
+            if (systemScript.GetIsHA())
                 health -= 2;
 
             if (health <= 0)
@@ -177,11 +152,12 @@ public class EnemyController : MonoBehaviour
 
     public void Die()
     {
-        spawnScript.playerAttack = false;
-        spawnScript.enemiesToKill -= 1;
-        Vector3 position = transform.position;
-        var newSoul = Instantiate(soulPrefab, position, Quaternion.identity);
+        systemScript.SetIsBeingAttacked(false);
+
+        var newSoul = Instantiate(soulPrefab, transform.position, Quaternion.identity);
         newSoul.transform.parent = soulHolder.transform;
+
+        systemScript.EnemyDeath();
         Destroy(gameObject);
     }
 }
