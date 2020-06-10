@@ -20,6 +20,7 @@ public class CameraController : MonoBehaviour
 
     void Start()
     {
+        cam.orthographic = false;
         OpenMainMenu();
     }
 

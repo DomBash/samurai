@@ -22,6 +22,8 @@ public class CharacterMovement : MonoBehaviour
     public Transform system;
     private SystemsController systemScript;
 
+    public Transform swordEnd;
+
     private int dodgeTime = 0;
 
     private LineRenderer lr;
@@ -29,6 +31,15 @@ public class CharacterMovement : MonoBehaviour
     public Text deathText;
 
     public TrailRenderer swordTrail;
+    public TrailRenderer swordTrailHeavy1;
+    public TrailRenderer swordTrailHeavy2;
+    public TrailRenderer swordTrailHeavy3;
+    public TrailRenderer swordTrailHeavy4;
+
+    public Transform heavyTrail1;
+    public Transform heavyTrail2;
+    public Transform heavyTrail3;
+    public Transform heavyTrail4;
 
     public Transform tree;
     private Vector3 startPosition;
@@ -40,6 +51,8 @@ public class CharacterMovement : MonoBehaviour
     private Vector3 dashDirection;
 
     public bool canMove = true;
+    private bool canStartLA = true;
+    private bool canStartHA = true;
     
 
     void Start()
@@ -55,6 +68,7 @@ public class CharacterMovement : MonoBehaviour
     {
         transform.position = startPosition;
         transform.rotation = startRotation;
+        speed = 6.0f;
     }
 
     void OnTriggerEnter(Collider other)
@@ -63,6 +77,8 @@ public class CharacterMovement : MonoBehaviour
         {
             systemScript.Dead(false);//Not treeDeath
         }
+        else if (other.tag == "Spike")
+            print("spike hit");
     }
 
     public void Dead()
@@ -83,7 +99,7 @@ public class CharacterMovement : MonoBehaviour
         if (transform.position.y < 0)
             systemScript.Dead(false);
 
-        if (!systemScript.isPaused)
+        if (!systemScript.GetIsPaused() && !systemScript.GetIsTouchingTree())
         {
             if (!systemScript.GetIsFinalAttacking() && !systemScript.GetIsTouchingTree())
             {
@@ -96,15 +112,12 @@ public class CharacterMovement : MonoBehaviour
                 //if (Input.GetKeyDown(KeyCode.Space) && Time.time >= nextDashTime)
                 if (Input.GetButtonDown("Dash") && Time.time >= nextDashTime)
                 {
-                    systemScript.SetIsLA(false);
-                    systemScript.SetIsHA(false);
-                    systemScript.SetLAAnim(false);
-                    systemScript.SetHAAnim(false);
+                    endLA();
+                    endHA();
+
                     systemScript.SetDashAnim(true);
 
                     systemScript.PlayDashAudio();
-                    swordTrail.emitting = false;
-
 
                     nextDashTime = Time.time + 1f / dashRate;
 
@@ -137,6 +150,7 @@ public class CharacterMovement : MonoBehaviour
                     //if (Input.GetMouseButtonDown(0) && Time.time >= nextLATime)//Light Attack
                     if (Input.GetButtonDown("Fire1") && Time.time >= nextLATime)//Light Attack
                     {
+                        canStartLA = true;
                         systemScript.SetLAAnim(true);
                         systemScript.PlaySword1Audio();
                         nextLATime = Time.time + 1f / laRate;
@@ -146,6 +160,7 @@ public class CharacterMovement : MonoBehaviour
                     //if (Input.GetMouseButtonDown(1))//Heavy Attack
                     if (Input.GetButtonDown("Fire2") && Time.time >= nextHATime)//Heavy Attack
                     {
+                        canStartHA = true;
                         systemScript.SetHAAnim(true);
                         systemScript.PlayHeavyAudio();
                         nextHATime = Time.time + 1f / haRate;
@@ -214,32 +229,69 @@ public class CharacterMovement : MonoBehaviour
 
     void startLA()
     {
-        systemScript.SetIsLA(true);
-        systemScript.SetIsWaitingForHit(true);
-        swordTrail.emitting = true;
+        if (canStartLA)
+        {
+            systemScript.SetIsLA(true);
+            systemScript.SetIsWaitingForHit(true);
+            swordTrail.emitting = true;
+        }
     }
 
     void endLA()
     {
-        systemScript.SetIsLA(false);
+        canStartLA = false;
         systemScript.SetIsWaitingForHit(false);
         swordTrail.emitting = false;
-
         systemScript.SetLAAnim(false);
+        systemScript.SetIsLA(false);
     }
 
     void startHA()
     {
-        systemScript.SetIsHA(true);
-        systemScript.SetIsWaitingForHit(true);
+        if (canStartHA)
+        {
+            systemScript.SetIsHA(true);
+            systemScript.SetIsWaitingForHit(true);
+            StartHeavyTrail();
+        }
+       
     }
 
     void endHA()
     {
+        canStartHA = false;
         systemScript.SetIsHA(false);
         systemScript.SetIsWaitingForHit(false);
+        EndHeavyTrail();
+
         systemScript.SetHAAnim(false);
 
+    }
+
+    void StartHeavyTrail()
+    {
+        heavyTrail1.localPosition = new Vector3(-0.0035f, 0.0255f, 0.0022f);
+        heavyTrail2.localPosition = new Vector3(0.0052f, 0.0222f, -0.0031f);
+        heavyTrail3.localPosition = new Vector3(0.0037f, 0.0249f, 0.0052f);
+        heavyTrail4.localPosition = new Vector3(-0.0037f, 0.0232f, -0.0058f);
+
+        swordTrailHeavy1.emitting = true;
+        swordTrailHeavy2.emitting = true;
+        swordTrailHeavy3.emitting = true;
+        swordTrailHeavy4.emitting = true;
+    }
+
+    void EndHeavyTrail()
+    {
+        heavyTrail1.localPosition = new Vector3(-0.0014f, 0.0491f, -0.0005f);
+        heavyTrail2.localPosition = new Vector3(-0.0014f, 0.0491f, -0.0005f);
+        heavyTrail3.localPosition = new Vector3(-0.0014f, 0.0491f, -0.0005f);
+        heavyTrail4.localPosition = new Vector3(-0.0014f, 0.0491f, -0.0005f);
+
+        swordTrailHeavy1.emitting = false;
+        swordTrailHeavy2.emitting = false;
+        swordTrailHeavy3.emitting = false;
+        swordTrailHeavy4.emitting = false;
     }
 
     void MovementAbilityOff()
@@ -249,59 +301,72 @@ public class CharacterMovement : MonoBehaviour
 
     void MovementAbilityOn()
     {
+        systemScript.SetIsTouchingTree(false);
         canMove = true;
     }
 
     IEnumerator finalAttack()
     {
-        systemScript.SetIsFinalAttacking(true);
-        dodgeTime = 0;
-        systemScript.SetWalkAnim(false);
-        origin = transform.position;
-        lr.SetPosition(0, transform.position);
-
-        GameObject enemy = GameObject.Find("Enemy(Clone)");
-        if (enemy == null)
+        if (systemScript.GetNumSouls() > 0)
         {
-            transform.position = origin;
-            yield return new WaitForSeconds(0.1f);
-            lr.positionCount = 1;
-            systemScript.SetIsFinalAttacking(false);
-            yield break;
-        }
-        var enemies = 20;
-        for (int i = 0; i < enemies; i++)         
-        {
-            lr.positionCount += 1;
-            EnemyController enemyScript = enemy.GetComponent<EnemyController>();    
-            
-            Vector3 deltaVector = enemy.transform.position - transform.position;
-            Vector3 enemyPos = enemy.transform.position + deltaVector.normalized*2;
-            enemyPos.y = 0.6f;
-            transform.position = enemyPos;
-            lr.SetPosition(i + 1, transform.position);
+        
+            systemScript.SetIsFinalAttacking(true);
+            dodgeTime = 0;
+            systemScript.SetWalkAnim(false);
+            origin = transform.position;
+            lr.SetPosition(0, transform.position);
 
-            transform.LookAt(new Vector3(enemy.transform.position.x, transform.position.y, enemy.transform.position.z));
-            transform.rotation *= Quaternion.Euler(0, -90, 0);
-
-            yield return new WaitForSeconds(0.2f);
-            systemScript.SetFinalAttackAnim(true);
-            systemScript.PlaySword1Audio();
-            yield return new WaitForSeconds(0.2f);
-            enemyScript.Die();
-            yield return new WaitForSeconds(0.1f);
-
-            enemy = GameObject.Find("Enemy(Clone)");
+            GameObject enemy = GameObject.Find("Enemy(Clone)");
             if (enemy == null)
             {
                 transform.position = origin;
+                yield return new WaitForSeconds(0.1f);
                 lr.positionCount = 1;
-                yield return new WaitForSeconds(0.5f);
-
                 systemScript.SetIsFinalAttacking(false);
                 yield break;
             }
+
+            int enemies = systemScript.GetNumSouls();
+            for (int i = 0; i < enemies; i++)
+            {
+                print("1");
+
+                lr.positionCount += 1;
+                EnemyController enemyScript = enemy.GetComponent<EnemyController>();
+
+                Vector3 deltaVector = enemy.transform.position - transform.position;
+                Vector3 enemyPos = enemy.transform.position + deltaVector.normalized * 2;
+                enemyPos.y = 0.6f;
+                transform.position = enemyPos;
+                lr.SetPosition(i + 1, transform.position);
+
+                transform.LookAt(new Vector3(enemy.transform.position.x, transform.position.y, enemy.transform.position.z));
+                transform.rotation *= Quaternion.Euler(0, -90, 0);
+
+                yield return new WaitForSeconds(0.2f);
+                systemScript.SetFinalAttackAnim(true);
+                systemScript.PlaySword1Audio();
+                yield return new WaitForSeconds(0.2f);
+                enemyScript.Die(false);
+                GameObject soul = GameObject.Find("Soul(Clone)");
+                Destroy(soul);
+                systemScript.SetNumSouls(systemScript.GetNumSouls() - 1);
+                yield return new WaitForSeconds(0.1f);
+
+                enemy = GameObject.Find("Enemy(Clone)");
+                if (enemy == null || systemScript.GetNumSouls() < 1)
+                {
+                    print("2");
+                    transform.position = origin;
+                    lr.positionCount = 1;
+                    yield return new WaitForSeconds(0.5f);
+
+                    systemScript.SetIsFinalAttacking(false);
+                    yield break;
+                }
+            }
         }
+        
         
     }
 

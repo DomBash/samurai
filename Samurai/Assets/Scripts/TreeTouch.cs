@@ -15,10 +15,7 @@ public class TreeTouch : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.R))
-            //soulHolder.position = player.position;
-        if (systemScript.isDead)
-            StopAllCoroutines();
+
     }
 
     void OnTriggerEnter(Collider other)

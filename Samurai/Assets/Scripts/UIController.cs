@@ -57,6 +57,7 @@ public class UIController : MonoBehaviour
         ShowTutorial();
         HideAllTutorialElements();
         treeTut.SetActive(true);
+        dashTut.SetActive(true);
     }
 
     public void RestartGame()//Same as Start Game
@@ -65,6 +66,7 @@ public class UIController : MonoBehaviour
         ShowTutorial();
         HideAllTutorialElements();
         treeTut.SetActive(true);
+        dashTut.SetActive(true);
     }
 
     public void OpenMainMenu()
@@ -145,8 +147,7 @@ public class UIController : MonoBehaviour
     {
         HideAllTutorialElements();
 
-        laTut.SetActive(true);
-        dashTut.SetActive(true);
+        laTut.SetActive(true);        
     }
 
     public void ShowTutorial2Text()

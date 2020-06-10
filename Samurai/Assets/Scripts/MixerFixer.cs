@@ -66,7 +66,7 @@ public class MixerFixer : MonoBehaviour
 
     public void PlayHeavyAudio()
     {
-        heavyAudio.PlayDelayed(0f);
+        heavyAudio.PlayDelayed(0.3f);
     }
 
     public void PlayDashAudio()

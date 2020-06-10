@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class SystemsController : MonoBehaviour
 {
-    public bool isPaused = true;
-    public bool isDead = false;
-    public bool canPause = false;
+    private bool isPaused = true;
+    private bool isDead = false;
+    private bool canPause = false;
 
     public Transform cam;
     public Transform ui;
@@ -15,6 +15,13 @@ public class SystemsController : MonoBehaviour
     public Transform player;
     public Transform animator;
     public Transform treeTouch;
+
+    public Transform soulHolder;
+    public Transform soulPrefab;
+    public Transform enemyHolder;
+    public Transform enemyPrefab;
+    public Transform bossPrefab;
+    public GameObject finalAttackEffect;
 
     private CameraController camScript;
     private UIController uiScript;
@@ -25,6 +32,8 @@ public class SystemsController : MonoBehaviour
     private TreeTouch treeScript;
 
     private string[] controllerNames;
+    private List<Transform> enemies = new List<Transform>();
+
     private bool isControllerTutorial = false;
     private bool gameStarted = false;
     public bool canUseSpecial = false;
@@ -32,12 +41,14 @@ public class SystemsController : MonoBehaviour
     private bool isPlayerPowered = false;
     private bool isReadyForNextRound = true;
     private bool isTouchingTree = false;
-    private bool isBeingAttacked = false;
+    public bool isBeingAttacked = false;
     private bool isFinalAttacking = false;
     private bool isHA = false;
-    private bool isLA = false;
+    public bool isLA = false;
 
     private int nextRound = 1;
+    public int numSouls = 0;
+    private int enemiesToKill = 0;
 
     void Start()
     {
@@ -50,13 +61,12 @@ public class SystemsController : MonoBehaviour
         treeScript = treeTouch.GetComponent<TreeTouch>();
     }
 
-
     void Update()
     {
-        if (isPaused) //Hide cursor when not in menu
+        /*if (isPaused) //Hide cursor when not in menu
             Cursor.visible = true;
         else
-            Cursor.visible = false;
+            Cursor.visible = false;*/
 
         if (Application.targetFrameRate != 60) //Set FPS
             Application.targetFrameRate = 60;
@@ -102,6 +112,11 @@ public class SystemsController : MonoBehaviour
             }
         }
 
+        if (Input.GetKeyDown(KeyCode.R)) //ESCAPE or Start
+        {
+            MoveSpiritsToPlayer();
+        }
+
     }
 
     public void StartGame()
@@ -135,11 +150,14 @@ public class SystemsController : MonoBehaviour
         camScript.RestartGame();
         audioScript.RestartGame();
 
+
         isDead = false;
         isPaused = false;
         gameStarted = true;
         canPause = true;
+        isBeingAttacked = false;
         nextRound = 1;
+        numSouls = 0;
         isReadyForNextRound = true;
 
     }
@@ -191,16 +209,25 @@ public class SystemsController : MonoBehaviour
         return isLA;
     }
 
+    public bool GetIsPaused()
+    {
+        return isPaused;
+    }
+
     //Set Bools ----------------------------------------------
 
     public void SetCanUseSpecial(bool parity)
     {
         canUseSpecial = parity;
+        if (parity)
+            finalAttackEffect.SetActive(true);
     }
 
     public void SetIsWaitingForHit(bool parity)
     {
         isWaitingForHit = parity;
+
+        SetEnemiesForHit(parity);
     }
 
     public void SetIsPlayerPowered(bool parity)
@@ -231,6 +258,35 @@ public class SystemsController : MonoBehaviour
     public void SetIsLA(bool parity)
     {
         isLA = parity;
+    }
+
+    //Get Ints --------------------------------------------------
+
+    public int GetNumSouls()
+    {
+        return numSouls;
+    }
+
+    public int GetEnemiesToKill()
+    {
+        return enemiesToKill;
+    }
+
+    //Set Ints --------------------------------------------------
+
+    public void SetNumSouls(int num)
+    {
+        numSouls = num;
+    }
+
+    public void SetNextRound(int num)
+    {
+        nextRound = num;
+    }
+
+    public void SetEnemiesToKill(int num)
+    {
+        enemiesToKill = num;
     }
 
     //Animations ----------------------------------------------
@@ -285,20 +341,25 @@ public class SystemsController : MonoBehaviour
     public void StartNextRound()//Player collision with tree
     {        
         playerScript.TouchTree();
+        isTouchingTree = true;
         isReadyForNextRound = false;
+
+        if (nextRound == 4)
+            MoveSpiritsToPlayer();
+
         spawnScript.StartNextRound(nextRound);
         nextRound += 1;
     }
 
     public void DestroyAllEnemies()
     {
-        GameObject[] enemies;
-        enemies = GameObject.FindGameObjectsWithTag("Enemy");
-        foreach (GameObject enemy in enemies)
+        GameObject[] currEnemies;
+        currEnemies = GameObject.FindGameObjectsWithTag("Enemy");
+        foreach (GameObject enemy in currEnemies)
         {
             Destroy(enemy);
         }
-        
+        enemies = new List<Transform>();
     }
 
     public void DestroyAllSouls()
@@ -353,12 +414,12 @@ public class SystemsController : MonoBehaviour
 
     public void ShowTutorial2Text()
     {
-        uiScript.ShowTutorial1Text();
+        uiScript.ShowTutorial2Text();
     }
 
     public void ShowTutorial3Text()
     {
-        uiScript.ShowTutorial1Text();
+        //uiScript.ShowTutorial3Text();
     }
 
     public void ShowRound2Text()
@@ -366,13 +427,35 @@ public class SystemsController : MonoBehaviour
         uiScript.ShowRound2Text();
     }
 
+    void MoveSpiritsToPlayer()
+    {
+        isPlayerPowered = true;
+        soulHolder.parent = GetPlayerTransform();
+        soulHolder.localPosition = new Vector3(0f, 4f, 0f);
+        playerScript.speed = 10.0f;
+    }
+
     public void ShowFinalRoundText()
     {
         uiScript.ShowFinalRoundText();
     }
 
-    public void EnemyDeath()
+    public void SpawnBoss()
     {
+        Instantiate(bossPrefab, new Vector3(-16f, 6.68f, 0f), Quaternion.identity);
+    }
+
+    public void EnemyDeath(Transform thisEnemy)
+    {
+        enemiesToKill -= 1;
+        foreach(Transform enemy in enemies)
+        {
+            if (enemy.transform == thisEnemy)
+            {
+                enemies.Remove(enemy);
+                break;
+            }
+        }
         spawnScript.EnemyDeath();
     }
 
@@ -401,6 +484,31 @@ public class SystemsController : MonoBehaviour
     public void PlayDeathAudio()
     {
         audioScript.PlayDeathAudio();
+    }
+
+    //Dev Tools ----------------------------------------------------
+
+    public void SpawnSoul(Vector3 pos)
+    {
+        numSouls += 1;
+        var newSoul = Instantiate(soulPrefab, pos, Quaternion.identity);
+        newSoul.transform.parent = soulHolder.transform;
+    }
+
+    public void SpawnEnemy(Vector3 pos)
+    {
+        enemiesToKill += 1;
+        var newEnemy = Instantiate(enemyPrefab, pos, Quaternion.identity);
+        newEnemy.transform.parent = enemyHolder.transform;
+        enemies.Add(newEnemy);
+    }
+
+    void SetEnemiesForHit(bool parity)
+    {
+        foreach(Transform enemy in enemies)
+        {
+            enemy.GetComponent<EnemyController>().isWaitingForHit = parity;
+        }
     }
 
     public Transform GetCamTransform()

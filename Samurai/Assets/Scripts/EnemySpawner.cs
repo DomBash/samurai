@@ -8,9 +8,9 @@ public class EnemySpawner : MonoBehaviour
 
     public Transform enemyPrefab;
     private int radius = 18;
-    public int enemiesToKill = 1;
+    //public int enemiesToKill = 1;
     public bool winGame = false;
-    private bool inTutorial = true;
+    public bool inTutorial = true;
     private int nextTutorial = 2;
 
     public GameObject enemyHolder;
@@ -49,7 +49,6 @@ public class EnemySpawner : MonoBehaviour
     public void RestartGame()
     {
         StopAllCoroutines();
-        enemiesToKill = 1;
 
         nextTutorial = 2;
         inTutorial = true;
@@ -70,21 +69,23 @@ public class EnemySpawner : MonoBehaviour
             StartCoroutine(StartR5());
         else if (nextRound == 6)
             StartCoroutine(StartRF());
+        else if (nextRound == 7)
+            StartCoroutine(StartRBoss());
     }
 
     public IEnumerator StartT1()
     {
-        enemiesToKill = 1;
+        print("Starting Tutorial 1...");
         yield return new WaitForSeconds(5f);       
         DarkMood();
         
         SpawnEnemy();
         systemScript.ShowTutorial1Text();
+        //systemScript.SetEnemiesToKill(1);
     }
 
     void StartT2()
     {
-        enemiesToKill = 1;
         SpawnEnemy();
         systemScript.ShowTutorial2Text();
         nextTutorial = 3;
@@ -92,7 +93,6 @@ public class EnemySpawner : MonoBehaviour
 
     void StartT3()
     {
-        enemiesToKill = 1;
         SpawnEnemy();
         systemScript.ShowTutorial3Text();
         inTutorial = false;
@@ -101,7 +101,8 @@ public class EnemySpawner : MonoBehaviour
 
     public IEnumerator StartR2()
     {
-        enemiesToKill = 4;
+        print("Starting Round 2...");
+
         systemScript.ShowRound2Text();
 
         yield return new WaitForSeconds(5f);
@@ -121,7 +122,8 @@ public class EnemySpawner : MonoBehaviour
 
     public IEnumerator StartR3()
     {
-        enemiesToKill = 4;
+        print("Starting Round 3...");
+
         yield return new WaitForSeconds(5f);
         DarkMood();
 
@@ -135,7 +137,8 @@ public class EnemySpawner : MonoBehaviour
 
     public IEnumerator StartR4()
     {
-        enemiesToKill = 6;
+        print("Starting Round 4...");
+
         yield return new WaitForSeconds(5f);
         DarkMood();
 
@@ -151,7 +154,8 @@ public class EnemySpawner : MonoBehaviour
 
     public IEnumerator StartR5()
     {
-        enemiesToKill = 5;
+        print("Starting Round 5...");
+
         yield return new WaitForSeconds(5f);
         DarkMood();
 
@@ -164,16 +168,28 @@ public class EnemySpawner : MonoBehaviour
 
     public IEnumerator StartRF()
     {
-        enemiesToKill = 20;
-        yield return new WaitForSeconds(5f);
+        print("Starting Final Round...");
 
-        for (int i = 0; i < 20; i++)
+        yield return new WaitForSeconds(5f);
+        DarkMood();
+
+        for (int i = 0; i < 22; i++)
         {
             SpawnEnemy();   
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForSeconds(0.0f);
         }
         systemScript.SetCanUseSpecial(true);
         systemScript.ShowFinalRoundText();
+    }
+
+    public IEnumerator StartRBoss()
+    {
+        print("Starting Boss Round...");
+
+        yield return new WaitForSeconds(5f);
+        DarkMood();
+
+        systemScript.SpawnBoss();
         winGame = true;
     }
 
@@ -190,8 +206,8 @@ public class EnemySpawner : MonoBehaviour
 
     public void EnemyDeath()
     {
-        enemiesToKill -= 1;
-        if (enemiesToKill == 0)
+        //enemiesToKill -= 1;
+        if (systemScript.GetEnemiesToKill() == 0)
         {
             if (inTutorial)
             {
@@ -219,7 +235,6 @@ public class EnemySpawner : MonoBehaviour
         var z = Mathf.Sin(a) * radius;
         Vector3 position = new Vector3(x, 2.58f, z);
 
-        var newEnemy = Instantiate(enemyPrefab, position, Quaternion.identity);
-        newEnemy.transform.parent = enemyHolder.transform;
+        systemScript.SpawnEnemy(position);
     }
 }

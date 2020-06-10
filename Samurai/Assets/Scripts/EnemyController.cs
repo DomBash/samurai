@@ -7,12 +7,12 @@ public class EnemyController : MonoBehaviour
     private Vector3 targetPos;
     private Vector3 newTargetPos;
     public float speed = 1f;
-    public Transform soulPrefab;
     public bool aggroed = false;
     public bool isAttacking = false;
     private float attackRange = 3f;
     private bool inCollision = false;
     private GameObject soulHolder;
+    public bool isWaitingForHit;
 
     private float step;
     public int health = 4;
@@ -40,7 +40,9 @@ public class EnemyController : MonoBehaviour
     {
         //print(attackAudio.isPlaying);
 
-        if (!systemScript.GetIsFinalAttacking() && !systemScript.isPaused)
+        //isWaitingForHit = systemScript.GetIsWaitingForHit();
+
+        if (!systemScript.GetIsFinalAttacking() && !systemScript.GetIsPaused())
         {
             var playerDist = Vector3.Distance(systemScript.GetPlayerTransform().position, transform.position);
             var treeDist = Vector3.Distance(Vector3.zero, transform.position);
@@ -122,7 +124,7 @@ public class EnemyController : MonoBehaviour
 
     void GetHurt(int source)
     {
-        if ((systemScript.GetIsLA() || systemScript.GetIsHA()) && inCollision && systemScript.GetIsWaitingForHit())
+        if ((systemScript.GetIsLA() || systemScript.GetIsHA()) && inCollision && isWaitingForHit)
         {
             //print(source);
             inCollision = false;
@@ -131,15 +133,15 @@ public class EnemyController : MonoBehaviour
             if (systemScript.GetIsLA())
                 health -= 1;               
             if (systemScript.GetIsHA())
-                health -= 2;
+                health -= 3;
 
             if (health <= 0)
             {
                 particles.color = Color.red;
-                Die();
+                Die(true);
             }
-            print("Enemy health: " + health);
-            systemScript.SetIsWaitingForHit(false);
+            //print("Enemy health: " + health);
+            isWaitingForHit = false;
         }
     }
 
@@ -150,14 +152,13 @@ public class EnemyController : MonoBehaviour
         particles.color = defaultColor;
     }
 
-    public void Die()
+    public void Die(bool spawnSoul)
     {
         systemScript.SetIsBeingAttacked(false);
+        if (spawnSoul)
+            systemScript.SpawnSoul(transform.position);
 
-        var newSoul = Instantiate(soulPrefab, transform.position, Quaternion.identity);
-        newSoul.transform.parent = soulHolder.transform;
-
-        systemScript.EnemyDeath();
+        systemScript.EnemyDeath(gameObject.transform);
         Destroy(gameObject);
     }
 }
