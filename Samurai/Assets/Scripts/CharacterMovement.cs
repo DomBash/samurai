@@ -78,7 +78,10 @@ public class CharacterMovement : MonoBehaviour
             systemScript.Dead(false);//Not treeDeath
         }
         else if (other.tag == "Spike")
-            print("spike hit");
+            systemScript.Dead(false);//Not treeDeath
+        else if (other.tag == "Slam")
+            systemScript.Dead(false);//Not treeDeath
+
     }
 
     public void Dead()

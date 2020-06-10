@@ -17,6 +17,7 @@ public class EnemySpawner : MonoBehaviour
 
     public float t = 1f;
     private float duration = 1f;
+    private float spawnDelay = 4f;
 
     public Transform system;
     private SystemsController systemScript;
@@ -51,7 +52,8 @@ public class EnemySpawner : MonoBehaviour
         StopAllCoroutines();
 
         nextTutorial = 2;
-        inTutorial = true;
+        print("shoudl be in tutoiral");
+        //inTutorial = true;
         winGame = false;
     }
 
@@ -76,7 +78,7 @@ public class EnemySpawner : MonoBehaviour
     public IEnumerator StartT1()
     {
         print("Starting Tutorial 1...");
-        yield return new WaitForSeconds(5f);       
+        yield return new WaitForSeconds(spawnDelay);       
         DarkMood();
         
         SpawnEnemy();
@@ -105,7 +107,7 @@ public class EnemySpawner : MonoBehaviour
 
         systemScript.ShowRound2Text();
 
-        yield return new WaitForSeconds(5f);
+        yield return new WaitForSeconds(spawnDelay);
         DarkMood();
         systemScript.HideAllTutorialElements();
         systemScript.HideTutorial();
@@ -124,7 +126,7 @@ public class EnemySpawner : MonoBehaviour
     {
         print("Starting Round 3...");
 
-        yield return new WaitForSeconds(5f);
+        yield return new WaitForSeconds(spawnDelay);
         DarkMood();
 
         SpawnEnemy();
@@ -139,7 +141,7 @@ public class EnemySpawner : MonoBehaviour
     {
         print("Starting Round 4...");
 
-        yield return new WaitForSeconds(5f);
+        yield return new WaitForSeconds(spawnDelay);
         DarkMood();
 
         SpawnEnemy();
@@ -156,7 +158,7 @@ public class EnemySpawner : MonoBehaviour
     {
         print("Starting Round 5...");
 
-        yield return new WaitForSeconds(5f);
+        yield return new WaitForSeconds(spawnDelay);
         DarkMood();
 
         SpawnEnemy();
@@ -170,7 +172,7 @@ public class EnemySpawner : MonoBehaviour
     {
         print("Starting Final Round...");
 
-        yield return new WaitForSeconds(5f);
+        yield return new WaitForSeconds(spawnDelay);
         DarkMood();
 
         for (int i = 0; i < 22; i++)
@@ -186,7 +188,7 @@ public class EnemySpawner : MonoBehaviour
     {
         print("Starting Boss Round...");
 
-        yield return new WaitForSeconds(5f);
+        yield return new WaitForSeconds(spawnDelay);
         DarkMood();
 
         systemScript.SpawnBoss();
@@ -216,7 +218,7 @@ public class EnemySpawner : MonoBehaviour
             else
             {
                 if (winGame)
-                    systemScript.WinGame();
+                    print("win game");//systemScript.WinGame();
                 else
                 {
                     systemScript.SetIsReadyForNextRound(true);

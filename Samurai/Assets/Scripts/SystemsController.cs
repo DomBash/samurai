@@ -21,6 +21,7 @@ public class SystemsController : MonoBehaviour
     public Transform enemyHolder;
     public Transform enemyPrefab;
     public Transform bossPrefab;
+    public Transform boss;
     public GameObject finalAttackEffect;
 
     private CameraController camScript;
@@ -143,21 +144,27 @@ public class SystemsController : MonoBehaviour
     {
         DestroyAllEnemies();
         DestroyAllSouls();
-
+        if (boss != null)
+        {
+            DestroyHealthTicks();
+        }
+        DestroyAllSpikes();
+        
         uiScript.StartGame();
         playerScript.RestartGame();
         spawnScript.RestartGame();
         camScript.RestartGame();
         audioScript.RestartGame();
 
-
         isDead = false;
         isPaused = false;
         gameStarted = true;
         canPause = true;
         isBeingAttacked = false;
-        nextRound = 1;
+        print("round should be 1");
+        nextRound = 7;
         numSouls = 0;
+        enemiesToKill = 0;
         isReadyForNextRound = true;
 
     }
@@ -372,6 +379,28 @@ public class SystemsController : MonoBehaviour
         }
     }
 
+    public void DestroyAllSpikes()
+    {
+        GameObject[] spikes;
+        spikes = GameObject.FindGameObjectsWithTag("Spiker");
+        foreach (GameObject spike in spikes)
+        {
+            Destroy(spike);
+        }
+    }
+
+    public void DestroyHealthTicks()
+    {
+        if (boss.GetComponent<BossController>().healthTicks.Count != 0)
+        {
+            foreach (Transform tick in boss.GetComponent<BossController>().healthTicks)
+            {
+                Destroy(tick.gameObject);
+            }
+            boss.GetComponent<BossController>().healthTicks = new List<Transform>();
+        }
+    }
+
     public void PlayDarkBG()
     {
         audioScript.PlayDarkBG();
@@ -442,7 +471,7 @@ public class SystemsController : MonoBehaviour
 
     public void SpawnBoss()
     {
-        Instantiate(bossPrefab, new Vector3(-16f, 6.68f, 0f), Quaternion.identity);
+        boss = Instantiate(bossPrefab, new Vector3(10f, 6.68f, 10f), Quaternion.identity);
     }
 
     public void EnemyDeath(Transform thisEnemy)
@@ -531,7 +560,10 @@ public class SystemsController : MonoBehaviour
 
         DestroyAllEnemies();
         DestroyAllSouls();
-        
+        DestroyHealthTicks();
+
+
+
         PlayDeathAudio();
     }
 

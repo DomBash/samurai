@@ -24,6 +24,11 @@ public class TestScript : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.O))
         {
+            systemScript.SpawnBoss();
+        }
+
+        if (Input.GetKeyDown(KeyCode.I))
+        {
             systemScript.SpawnEnemy(new Vector3(0f, 2.58f, -15f));
         }
 
@@ -66,6 +71,7 @@ public class TestScript : MonoBehaviour
         {
             spawnScript.inTutorial = false;
             systemScript.SetNextRound(6);
+            systemScript.SetCanUseSpecial(true);
             SpawnSouls(22);
         }
 
@@ -75,6 +81,8 @@ public class TestScript : MonoBehaviour
             spawnScript.inTutorial = false;
             systemScript.SetNextRound(7);
             systemScript.HideTutorial();
+            systemScript.SetCanUseSpecial(true);
+            systemScript.SetIsPlayerPowered(true);
             SpawnSouls(0);
         }
 

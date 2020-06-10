@@ -25,6 +25,9 @@ public class EnemyController : MonoBehaviour
     private Transform system;
     private SystemsController systemScript;
 
+    public GameObject leftArm;
+    public GameObject rightArm;
+
     void Start()
     {
         system = GameObject.Find("Systems").transform;
@@ -34,7 +37,6 @@ public class EnemyController : MonoBehaviour
         defaultColor = particles.color;
         step = speed * Time.deltaTime;
     }
-
 
     void Update()
     {
@@ -47,11 +49,21 @@ public class EnemyController : MonoBehaviour
             var playerDist = Vector3.Distance(systemScript.GetPlayerTransform().position, transform.position);
             var treeDist = Vector3.Distance(Vector3.zero, transform.position);
 
-            if (playerDist <= attackRange && aggroed) //Aggro and in attack range of player
+            if (playerDist <= attackRange && aggroed && !isAttacking) //Aggro and in attack range of player
             {
                 isAttacking = true;
                 systemScript.PlayEnemyAttackAudio();
                 animator.SetBool("Attack", true);
+                int attackNum = Random.Range(1, 4);
+                if (attackNum == 1)
+                    leftArm.SetActive(true);
+                else if (attackNum == 2)
+                    rightArm.SetActive(true);
+                else if (attackNum == 3)
+                {
+                    rightArm.SetActive(true);
+                    leftArm.SetActive(true);
+                }
                 return;
             }
 
@@ -105,6 +117,8 @@ public class EnemyController : MonoBehaviour
     {
         isAttacking = false;
         animator.SetBool("Attack", false);
+        rightArm.SetActive(false);
+        leftArm.SetActive(false);
     }
 
     void OnTriggerEnter(Collider other)
