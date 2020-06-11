@@ -15,6 +15,13 @@ public class MixerFixer : MonoBehaviour
     public AudioSource heavyAudio;
     public AudioSource dashAudio;
     public AudioSource enemyAttackAudio;
+    public AudioSource enemyDeathAudio;
+    public AudioSource bossDeathAudio;
+
+
+    public AudioSource treeTouchAudio;
+    public AudioSource hitAudio;
+    public AudioSource bossSpawnAudio;
 
     void Start()
     {
@@ -76,12 +83,37 @@ public class MixerFixer : MonoBehaviour
 
     public void PlayEnemyAttackAudio()
     {
-        enemyAttackAudio.PlayDelayed(0f);
+        enemyAttackAudio.PlayDelayed(0.85f);
     }
 
     public void PlayDeathAudio()
     {
         deathAudio.PlayDelayed(0);
+    }
+
+    public void PlayEnemyDeathAudio()
+    {
+        enemyDeathAudio.PlayDelayed(0);
+    }
+
+    public void PlayBossDeathAudio()
+    {
+        bossDeathAudio.PlayDelayed(0);
+    }
+
+    public void PlayTreeTouchAudio()
+    {
+        treeTouchAudio.PlayDelayed(0.5f);
+    }
+
+    public void PlayBossSpawnAudio()
+    {
+        bossSpawnAudio.PlayDelayed(0);
+    }
+
+    public void PlayHitAudio()
+    {
+        hitAudio.PlayDelayed(0);
     }
 
 }

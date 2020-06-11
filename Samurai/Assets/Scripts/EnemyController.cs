@@ -72,6 +72,8 @@ public class EnemyController : MonoBehaviour
                 isAttacking = true;
                 systemScript.PlayEnemyAttackAudio();
                 animator.SetBool("Attack", true);
+                rightArm.SetActive(true);
+                leftArm.SetActive(true);
                 return;
             }
 
@@ -141,11 +143,15 @@ public class EnemyController : MonoBehaviour
         if ((systemScript.GetIsLA() || systemScript.GetIsHA()) && inCollision && isWaitingForHit)
         {
             //print(source);
+            systemScript.PlayHitAudio();
             inCollision = false;
             aggroed = true;
             StartCoroutine(HitColorChange());
             if (systemScript.GetIsLA())
-                health -= 1;               
+            {
+                health -= 1;
+            }
+
             if (systemScript.GetIsHA())
                 health -= 3;
 

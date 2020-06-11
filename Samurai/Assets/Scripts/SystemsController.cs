@@ -23,6 +23,7 @@ public class SystemsController : MonoBehaviour
     public Transform bossPrefab;
     public Transform boss;
     public GameObject finalAttackEffect;
+    public ParticleSystem treeStartEffect;
 
     private CameraController camScript;
     private UIController uiScript;
@@ -35,24 +36,26 @@ public class SystemsController : MonoBehaviour
     private string[] controllerNames;
     private List<Transform> enemies = new List<Transform>();
 
-    private bool isControllerTutorial = false;
+    public bool isControllerTutorial = false;
     private bool gameStarted = false;
-    public bool canUseSpecial = false;
+    private bool canUseSpecial = false;
     private bool isWaitingForHit = false;
     private bool isPlayerPowered = false;
     private bool isReadyForNextRound = true;
     private bool isTouchingTree = false;
-    public bool isBeingAttacked = false;
+    private bool isBeingAttacked = false;
     private bool isFinalAttacking = false;
     private bool isHA = false;
-    public bool isLA = false;
+    private bool isLA = false;
+    private bool isAtBoss = false;
 
     private int nextRound = 1;
-    public int numSouls = 0;
+    private int numSouls = 0;
     private int enemiesToKill = 0;
 
     void Start()
     {
+        Cursor.visible = false;
         camScript = cam.GetComponent<CameraController>();
         uiScript = ui.GetComponent<UIController>();
         spawnScript = spawner.GetComponent<EnemySpawner>();
@@ -64,12 +67,12 @@ public class SystemsController : MonoBehaviour
 
     void Update()
     {
-        /*if (isPaused) //Hide cursor when not in menu
-            Cursor.visible = true;
-        else
-            Cursor.visible = false;*/
+        if (Input.GetKeyDown(KeyCode.Alpha8))
+        {
+            audioScript.PlayEnemyDeathAudio();
+        }
 
-        if (Application.targetFrameRate != 60) //Set FPS
+            if (Application.targetFrameRate != 60) //Set FPS
             Application.targetFrameRate = 60;
 
         controllerNames = Input.GetJoystickNames();
@@ -79,6 +82,8 @@ public class SystemsController : MonoBehaviour
             if (controllerNames[0] != "" && !isControllerTutorial)
             {
                 uiScript.ControllerTutorialOn();
+                playerScript.contDashUp = false;
+
                 isControllerTutorial = true;
             }
             else if (controllerNames[0] == "" && isControllerTutorial)
@@ -88,18 +93,40 @@ public class SystemsController : MonoBehaviour
             }
         }
 
+        if (isPaused)
+        {
+            if (!isControllerTutorial)
+                Cursor.visible = true;
+        }
+        else
+        {
+            Cursor.visible = false;
+        }
+
         if (Input.GetButtonDown("Pause")) //ESCAPE or Start
         {
+            if(isControllerTutorial)
+                playerScript.contDashUp = false;
             if (isDead)
             {
                 camScript.SetBGLight();  
+
                 uiScript.OpenMainMenu();
                 isDead = false;
+                isAtBoss = false;
+                spawnScript.inTutorial = false;
+                isPlayerPowered = false;
+                MoveSpiritsToTree();
+                animScript.SetWalkAnim(false);
             }
             else if (!canPause && uiScript.optionsMenu.activeSelf)
             {
                 gameStarted = false;
                 uiScript.OpenMainMenu();
+            }
+            else if (!canPause && uiScript.mainMenu.activeSelf)
+            {
+                StartGame();
             }
             else if (canPause)
             {
@@ -126,9 +153,19 @@ public class SystemsController : MonoBehaviour
         camScript.StartGame();
         audioScript.StartGame();
 
+        MoveSpiritsToTree();
+
         isPaused = false;
         gameStarted = true;
         canPause = true;
+        canUseSpecial = false;
+        finalAttackEffect.SetActive(false);
+        isReadyForNextRound = true;
+
+        isDead = false;
+        isBeingAttacked = false;
+        numSouls = 0;
+        enemiesToKill = 0;
     }
 
     public void ResumeGame()
@@ -147,22 +184,28 @@ public class SystemsController : MonoBehaviour
         if (boss != null)
         {
             DestroyHealthTicks();
+            Destroy(boss.gameObject);
+            DestroyAllSpikes();
         }
         DestroyAllSpikes();
         
-        uiScript.StartGame();
+        uiScript.RestartGame();
         playerScript.RestartGame();
         spawnScript.RestartGame();
         camScript.RestartGame();
         audioScript.RestartGame();
 
+        if (isAtBoss)
+            nextRound = 7;
+        else
+            nextRound = 1;
+
         isDead = false;
         isPaused = false;
+        MoveSpiritsToTree();
         gameStarted = true;
         canPause = true;
         isBeingAttacked = false;
-        print("round should be 1");
-        nextRound = 7;
         numSouls = 0;
         enemiesToKill = 0;
         isReadyForNextRound = true;
@@ -221,6 +264,11 @@ public class SystemsController : MonoBehaviour
         return isPaused;
     }
 
+    public bool GetIsAtBoss()
+    {
+        return isAtBoss;
+    }
+
     //Set Bools ----------------------------------------------
 
     public void SetCanUseSpecial(bool parity)
@@ -267,6 +315,11 @@ public class SystemsController : MonoBehaviour
         isLA = parity;
     }
 
+    public void SetIsAtBoss(bool parity)
+    {
+        isAtBoss = parity;
+    }
+
     //Get Ints --------------------------------------------------
 
     public int GetNumSouls()
@@ -277,6 +330,11 @@ public class SystemsController : MonoBehaviour
     public int GetEnemiesToKill()
     {
         return enemiesToKill;
+    }
+
+    public int GetNextRound()
+    {
+        return nextRound;
     }
 
     //Set Ints --------------------------------------------------
@@ -306,6 +364,14 @@ public class SystemsController : MonoBehaviour
     public void SetTreeTouchAnim(bool parity)
     {
         animScript.SetTreeTouchAnim(parity);
+        StartCoroutine(TreeEffect());
+        audioScript.PlayTreeTouchAudio();
+    }
+
+    IEnumerator TreeEffect()
+    {
+        yield return new WaitForSeconds(0.8f);
+        treeStartEffect.Play();
     }
 
     public void SetLAAnim(bool parity)
@@ -431,11 +497,6 @@ public class SystemsController : MonoBehaviour
         uiScript.HideAllTutorialElements();
     }
 
-    public void HideTutorial()
-    {
-        uiScript.HideTutorial();
-    }
-
     public void ShowTutorial1Text()
     {
         uiScript.ShowTutorial1Text();
@@ -444,11 +505,6 @@ public class SystemsController : MonoBehaviour
     public void ShowTutorial2Text()
     {
         uiScript.ShowTutorial2Text();
-    }
-
-    public void ShowTutorial3Text()
-    {
-        //uiScript.ShowTutorial3Text();
     }
 
     public void ShowRound2Text()
@@ -464,20 +520,35 @@ public class SystemsController : MonoBehaviour
         playerScript.speed = 10.0f;
     }
 
+    void MoveSpiritsToTree()
+    {
+        isPlayerPowered = false;
+        soulHolder.parent = GetTreeTransform();
+        soulHolder.localPosition = new Vector3(0f, 6f, 0f);
+        playerScript.speed = 6.0f;
+    }
+
     public void ShowFinalRoundText()
     {
         uiScript.ShowFinalRoundText();
     }
 
+    public void ShowCheckpointTut()
+    {
+        uiScript.ShowCheckpointTut();
+    }
+
     public void SpawnBoss()
     {
         boss = Instantiate(bossPrefab, new Vector3(10f, 6.68f, 10f), Quaternion.identity);
+        audioScript.PlayBossSpawnAudio();
     }
 
     public void EnemyDeath(Transform thisEnemy)
     {
         enemiesToKill -= 1;
-        foreach(Transform enemy in enemies)
+        audioScript.PlayEnemyDeathAudio();
+        foreach (Transform enemy in enemies)
         {
             if (enemy.transform == thisEnemy)
             {
@@ -515,6 +586,21 @@ public class SystemsController : MonoBehaviour
         audioScript.PlayDeathAudio();
     }
 
+    public void PlayBossDeathAudio()
+    {
+        audioScript.PlayBossDeathAudio();
+    }
+
+    public void PlayHitAudio()
+    {
+        audioScript.PlayHitAudio();
+    }
+
+   /*public void PlayEnemyDeathAudio()
+    {
+        audioScript.PlayEnemyDeathAudio();
+    }*/
+
     //Dev Tools ----------------------------------------------------
 
     public void SpawnSoul(Vector3 pos)
@@ -526,7 +612,8 @@ public class SystemsController : MonoBehaviour
 
     public void SpawnEnemy(Vector3 pos)
     {
-        enemiesToKill += 1;
+        if(enemiesToKill == 0)
+            enemiesToKill += 1;
         var newEnemy = Instantiate(enemyPrefab, pos, Quaternion.identity);
         newEnemy.transform.parent = enemyHolder.transform;
         enemies.Add(newEnemy);
@@ -550,25 +637,44 @@ public class SystemsController : MonoBehaviour
         return playerScript.GetPlayerTransform();
     }
 
+    public Transform GetTreeTransform()
+    {
+        return treeScript.GetTreeTransform();
+    }
+
     public void Dead(bool isTreeDeath)
     {
         print("Death");
         isPaused = true;
         isDead = true;
+
+        if(isControllerTutorial)
+            playerScript.contDashUp = false;
+
         uiScript.Dead(isTreeDeath);
         playerScript.Dead();
 
         DestroyAllEnemies();
         DestroyAllSouls();
-        DestroyHealthTicks();
-
-
+        if (boss != null)
+        {
+            DestroyHealthTicks();
+            Destroy(boss.gameObject);
+            DestroyAllSpikes();
+           
+        }
 
         PlayDeathAudio();
     }
 
     public void WinGame()
     {
+
+        DestroyAllEnemies();
+        //Destroy(boss.gameObject);
+        SetBGLight();
+        PlayLightBG();
+        SetIsReadyForNextRound(true);
         uiScript.WinGame();
     }
 

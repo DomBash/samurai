@@ -10,6 +10,7 @@ TagManager:
   - Spike
   - Slam
   - Spiker
+  - Boss
   layers:
   - Default
   - TransparentFX

@@ -34,4 +34,9 @@ public class TreeTouch : MonoBehaviour
         yield return new WaitForSeconds(0.2f);
         systemScript.SetIsPlayerPowered(true);
     }
+
+    public Transform GetTreeTransform()
+    {
+        return gameObject.transform;
+    }
 }

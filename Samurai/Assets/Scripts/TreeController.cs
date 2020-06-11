@@ -24,4 +24,5 @@ public class TreeController : MonoBehaviour
             systemScript.Dead(true);
         }
     }
+   
 }

@@ -17,11 +17,13 @@ public class BossController : MonoBehaviour
     private float attackRange = 8f;
     public float speed = 0.9f;
     public float step;
-    private float spikeRate = 0.05f;
+    private float spikeRate = 0.08f;
     private float nextSpikeTime = 0f;
 
-    private float meleeRate = 0.5f;
+    private float meleeRate = 0.6f;
     private float nextMeleeTime = 0f;
+
+    private float firstAttackTime = 5f;
 
     private int health = 30;
 
@@ -49,6 +51,7 @@ public class BossController : MonoBehaviour
         systemScript = system.GetComponent<SystemsController>();
 
         step = speed * Time.deltaTime;
+        firstAttackTime += Time.time;
 
         var setJ = 20;
         for(int i = 0; i < 2; i++)
@@ -65,8 +68,8 @@ public class BossController : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.T))
-            animator.SetBool("Melee", true);
+        //if (Input.GetKeyDown(KeyCode.T))
+            //Die();
 
         if (!systemScript.GetIsFinalAttacking() && !systemScript.GetIsPaused() && !isAttacking)
         {
@@ -80,7 +83,7 @@ public class BossController : MonoBehaviour
                 nextMeleeTime = Time.time + 1f / meleeRate;
                 return;
             }
-            else if (Time.time >= nextSpikeTime)
+            else if (Time.time >= nextSpikeTime && Time.time >= firstAttackTime)
             {
                 StartCoroutine(RangedAttack());
                 nextSpikeTime = Time.time + 1f / spikeRate;
@@ -115,6 +118,7 @@ public class BossController : MonoBehaviour
     {
         if ((systemScript.GetIsLA() || systemScript.GetIsHA()) && inCollision)
         {
+            systemScript.PlayHitAudio();
             //print(source);
             inCollision = false;
             StartCoroutine(HitColorChange());
@@ -127,7 +131,6 @@ public class BossController : MonoBehaviour
             {
                 health -= 3;
                 DestroyTicks(3);
-
             }
 
             if (health <= 0)
@@ -160,14 +163,17 @@ public class BossController : MonoBehaviour
 
     void SummonAttack()
     {
-       
-        var a = UnityEngine.Random.value * (2 * Mathf.PI) - Mathf.PI;
-        var x = Mathf.Cos(a) * 18;
-        var z = Mathf.Sin(a) * 18;
-        Vector3 position = new Vector3(x, 2.58f, z);
 
-        systemScript.SpawnEnemy(position);
-        //spawn enemy random on circle * 2
+        for (int i = 0; i < 2; i++)
+        {
+            var a = UnityEngine.Random.value * (2 * Mathf.PI) - Mathf.PI;
+            var x = Mathf.Cos(a) * 13;
+            var z = Mathf.Sin(a) * 13;
+            Vector3 position = new Vector3(x, 2.58f, z);
+
+            systemScript.SpawnEnemy(position); 
+        }
+
         isAttacking = false;
     }
 
@@ -201,9 +207,15 @@ public class BossController : MonoBehaviour
     private void Die()
     {
         print("boss died");
-        //death anim
-        //death sound
-        //you win = true
+        animator.SetBool("Death", true);
+        systemScript.PlayBossDeathAudio();
+
+    }
+
+    void DestroyBoss()
+    {
+        Destroy(gameObject);
+        systemScript.WinGame();
     }
 
     private void DestroyTicks(int num)

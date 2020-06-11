@@ -17,6 +17,8 @@ public class UIController : MonoBehaviour
     public GameObject backButton;
     public GameObject deathButton;
 
+    public GameObject restartButton;
+
     public GameObject laTut;
     public GameObject haTut;
     public GameObject dashTut;
@@ -25,6 +27,7 @@ public class UIController : MonoBehaviour
     public GameObject treeTut;
     public GameObject dieTut;
     public GameObject specialTut;
+    public GameObject checkpointTut;
 
 
     public GameObject winText;
@@ -58,15 +61,26 @@ public class UIController : MonoBehaviour
         HideAllTutorialElements();
         treeTut.SetActive(true);
         dashTut.SetActive(true);
+        winText.SetActive(false);
     }
 
-    public void RestartGame()//Same as Start Game
+    public void RestartGame()
     {
         HideAllMenus();
         ShowTutorial();
         HideAllTutorialElements();
-        treeTut.SetActive(true);
-        dashTut.SetActive(true);
+        winText.SetActive(false);
+
+
+        if (systemScript.GetIsAtBoss())
+        {
+            checkpointTut.SetActive(true);
+        }
+        else
+        {
+            treeTut.SetActive(true);
+            dashTut.SetActive(true);
+        }
     }
 
     public void OpenMainMenu()
@@ -90,6 +104,8 @@ public class UIController : MonoBehaviour
         tutorial.SetActive(false);
         deathScreen.SetActive(false);
 
+        
+
         eventSystem.SetSelectedGameObject(backButton);
     }
 
@@ -101,6 +117,11 @@ public class UIController : MonoBehaviour
         optionsMenu.SetActive(false);
         tutorial.SetActive(false);
         deathScreen.SetActive(false);
+
+        if (systemScript.GetIsAtBoss())
+            restartButton.GetComponentInChildren<Text>().text = "Checkpoint";
+        else
+            restartButton.GetComponentInChildren<Text>().text = "Restart";
 
         eventSystem.SetSelectedGameObject(resumeButton);
     }
@@ -126,11 +147,6 @@ public class UIController : MonoBehaviour
         tutorial.SetActive(true);
     }
 
-    public void HideTutorial()
-    {
-        tutorial.SetActive(false);
-    }
-
     public void HideAllTutorialElements()
     {
         laTut.SetActive(false);
@@ -141,6 +157,7 @@ public class UIController : MonoBehaviour
         treeTut.SetActive(false);
         dieTut.SetActive(false);
         specialTut.SetActive(false);
+        checkpointTut.SetActive(false);
     }
 
     public void ShowTutorial1Text()
@@ -158,13 +175,6 @@ public class UIController : MonoBehaviour
         camTut.SetActive(true);
     }
 
-    public void ShowTutorial3Text()
-    {
-        HideAllTutorialElements();
-
-        soulTut.SetActive(true);
-    }
-
     public void ShowRound2Text()
     {
         HideAllTutorialElements();
@@ -177,6 +187,11 @@ public class UIController : MonoBehaviour
         HideAllTutorialElements();
 
         specialTut.SetActive(true);
+    }
+
+    public void ShowCheckpointTut()
+    {
+        checkpointTut.SetActive(true);
     }
 
     public void ControllerTutorialOn()

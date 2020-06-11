@@ -20,6 +20,8 @@ public class TestScript : MonoBehaviour
         if(Input.GetKeyDown(KeyCode.P))
         {
             SpawnSouls(1);
+            if (Input.GetKey(KeyCode.Backslash))
+                SpawnSouls(21);
         }
 
         if (Input.GetKeyDown(KeyCode.O))
@@ -80,7 +82,9 @@ public class TestScript : MonoBehaviour
             print("Set next round to Boss...");
             spawnScript.inTutorial = false;
             systemScript.SetNextRound(7);
-            systemScript.HideTutorial();
+            systemScript.HideAllTutorialElements();
+            systemScript.ShowCheckpointTut();
+            systemScript.SetIsAtBoss(true);
             systemScript.SetCanUseSpecial(true);
             systemScript.SetIsPlayerPowered(true);
             SpawnSouls(0);

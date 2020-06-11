@@ -50,9 +50,10 @@ public class CharacterMovement : MonoBehaviour
     private Vector3 origin = Vector3.zero;
     private Vector3 dashDirection;
 
-    public bool canMove = true;
+    private bool canMove = true;
     private bool canStartLA = true;
     private bool canStartHA = true;
+    public bool contDashUp = true;
     
 
     void Start()
@@ -71,7 +72,7 @@ public class CharacterMovement : MonoBehaviour
         speed = 6.0f;
     }
 
-    void OnTriggerEnter(Collider other)
+    /*void OnTriggerEnter(Collider other)
     {
         if (other.tag == "Enemy")
         {
@@ -82,7 +83,7 @@ public class CharacterMovement : MonoBehaviour
         else if (other.tag == "Slam")
             systemScript.Dead(false);//Not treeDeath
 
-    }
+    }*/
 
     public void Dead()
     {
@@ -102,6 +103,9 @@ public class CharacterMovement : MonoBehaviour
         if (transform.position.y < 0)
             systemScript.Dead(false);
 
+        if (!systemScript.GetIsPaused() && Input.GetButtonUp("Dash"))
+            contDashUp = true;
+
         if (!systemScript.GetIsPaused() && !systemScript.GetIsTouchingTree())
         {
             if (!systemScript.GetIsFinalAttacking() && !systemScript.GetIsTouchingTree())
@@ -113,7 +117,7 @@ public class CharacterMovement : MonoBehaviour
                 }
 
                 //if (Input.GetKeyDown(KeyCode.Space) && Time.time >= nextDashTime)
-                if (Input.GetButtonDown("Dash") && Time.time >= nextDashTime)
+                if (Input.GetButtonDown("Dash") && Time.time >= nextDashTime && contDashUp)
                 {
                     endLA();
                     endHA();
@@ -332,7 +336,6 @@ public class CharacterMovement : MonoBehaviour
             int enemies = systemScript.GetNumSouls();
             for (int i = 0; i < enemies; i++)
             {
-                print("1");
 
                 lr.positionCount += 1;
                 EnemyController enemyScript = enemy.GetComponent<EnemyController>();
@@ -359,7 +362,6 @@ public class CharacterMovement : MonoBehaviour
                 enemy = GameObject.Find("Enemy(Clone)");
                 if (enemy == null || systemScript.GetNumSouls() < 1)
                 {
-                    print("2");
                     transform.position = origin;
                     lr.positionCount = 1;
                     yield return new WaitForSeconds(0.5f);

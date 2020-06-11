@@ -1,15 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class EnemySpawner : MonoBehaviour
 {
 
     public Transform enemyPrefab;
     private int radius = 18;
-    //public int enemiesToKill = 1;
-    public bool winGame = false;
     public bool inTutorial = true;
     private int nextTutorial = 2;
 
@@ -52,9 +49,10 @@ public class EnemySpawner : MonoBehaviour
         StopAllCoroutines();
 
         nextTutorial = 2;
-        print("shoudl be in tutoiral");
-        //inTutorial = true;
-        winGame = false;
+        if (systemScript.GetIsAtBoss())
+            inTutorial = false;
+        else
+            inTutorial = true;
     }
 
     public void StartNextRound(int nextRound)
@@ -78,6 +76,8 @@ public class EnemySpawner : MonoBehaviour
     public IEnumerator StartT1()
     {
         print("Starting Tutorial 1...");
+        systemScript.SetEnemiesToKill(1);
+
         yield return new WaitForSeconds(spawnDelay);       
         DarkMood();
         
@@ -88,6 +88,8 @@ public class EnemySpawner : MonoBehaviour
 
     void StartT2()
     {
+        systemScript.SetEnemiesToKill(1);
+
         SpawnEnemy();
         systemScript.ShowTutorial2Text();
         nextTutorial = 3;
@@ -95,8 +97,10 @@ public class EnemySpawner : MonoBehaviour
 
     void StartT3()
     {
+        systemScript.SetEnemiesToKill(1);
+
         SpawnEnemy();
-        systemScript.ShowTutorial3Text();
+        systemScript.HideAllTutorialElements();
         inTutorial = false;
 
     }
@@ -104,14 +108,13 @@ public class EnemySpawner : MonoBehaviour
     public IEnumerator StartR2()
     {
         print("Starting Round 2...");
+        systemScript.SetEnemiesToKill(4);
 
         systemScript.ShowRound2Text();
 
         yield return new WaitForSeconds(spawnDelay);
         DarkMood();
-        systemScript.HideAllTutorialElements();
-        systemScript.HideTutorial();
-        
+        systemScript.HideAllTutorialElements();        
 
         SpawnEnemy();
         yield return new WaitForSeconds(5f);
@@ -128,6 +131,7 @@ public class EnemySpawner : MonoBehaviour
 
         yield return new WaitForSeconds(spawnDelay);
         DarkMood();
+        systemScript.SetEnemiesToKill(4);
 
         SpawnEnemy();
         SpawnEnemy();
@@ -140,6 +144,7 @@ public class EnemySpawner : MonoBehaviour
     public IEnumerator StartR4()
     {
         print("Starting Round 4...");
+        systemScript.SetEnemiesToKill(6);
 
         yield return new WaitForSeconds(spawnDelay);
         DarkMood();
@@ -157,7 +162,7 @@ public class EnemySpawner : MonoBehaviour
     public IEnumerator StartR5()
     {
         print("Starting Round 5...");
-
+        systemScript.SetEnemiesToKill(5);
         yield return new WaitForSeconds(spawnDelay);
         DarkMood();
 
@@ -171,6 +176,7 @@ public class EnemySpawner : MonoBehaviour
     public IEnumerator StartRF()
     {
         print("Starting Final Round...");
+        systemScript.SetEnemiesToKill(22);
 
         yield return new WaitForSeconds(spawnDelay);
         DarkMood();
@@ -187,12 +193,11 @@ public class EnemySpawner : MonoBehaviour
     public IEnumerator StartRBoss()
     {
         print("Starting Boss Round...");
-
+        systemScript.HideAllTutorialElements();
         yield return new WaitForSeconds(spawnDelay);
         DarkMood();
 
         systemScript.SpawnBoss();
-        winGame = true;
     }
 
     void StartNextTutorial()
@@ -217,15 +222,24 @@ public class EnemySpawner : MonoBehaviour
             }
             else
             {
-                if (winGame)
-                    print("win game");//systemScript.WinGame();
+                if (systemScript.GetNextRound() == 7)
+                {
+                    systemScript.SetIsAtBoss(true);
+                    systemScript.SetBGLight();
+                    systemScript.PlayLightBG();
+                    systemScript.SetIsReadyForNextRound(true);
+                    systemScript.ShowCheckpointTut();                    
+                }
                 else
+                    systemScript.HideAllTutorialElements();
+
+                if (!systemScript.GetIsAtBoss())
                 {
                     systemScript.SetIsReadyForNextRound(true);
                     systemScript.SetBGLight();
                     systemScript.PlayLightBG();
-                    systemScript.HideAllTutorialElements();
                 }
+                             
             }
         }
     }
