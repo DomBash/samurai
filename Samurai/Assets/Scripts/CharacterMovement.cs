@@ -72,7 +72,7 @@ public class CharacterMovement : MonoBehaviour
         speed = 6.0f;
     }
 
-    /*void OnTriggerEnter(Collider other)
+    void OnTriggerEnter(Collider other)
     {
         if (other.tag == "Enemy")
         {
@@ -82,8 +82,8 @@ public class CharacterMovement : MonoBehaviour
             systemScript.Dead(false);//Not treeDeath
         else if (other.tag == "Slam")
             systemScript.Dead(false);//Not treeDeath
-
-    }*/
+    
+    }
 
     public void Dead()
     {
