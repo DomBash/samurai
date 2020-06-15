@@ -9,12 +9,16 @@ public class UIController : MonoBehaviour
     public GameObject mainMenu;
     public GameObject optionsMenu;
     public GameObject pauseMenu;
+    public GameObject aboutMenu;
+    public GameObject creditsMenu;
     public GameObject tutorial;
     public GameObject deathScreen;
 
     public GameObject playButton;
     public GameObject resumeButton;
     public GameObject backButton;
+    public GameObject creditsButton;
+    public GameObject backButtonCredit;
     public GameObject deathButton;
 
     public GameObject restartButton;
@@ -103,10 +107,28 @@ public class UIController : MonoBehaviour
         pauseMenu.SetActive(false);
         tutorial.SetActive(false);
         deathScreen.SetActive(false);
+        aboutMenu.SetActive(false);
 
         
 
         eventSystem.SetSelectedGameObject(backButton);
+    }
+
+    public void OpenAboutMenu()
+    {
+        aboutMenu.SetActive(true);
+        optionsMenu.SetActive(false);
+        creditsMenu.SetActive(false);
+
+        eventSystem.SetSelectedGameObject(creditsButton);
+    }
+
+    public void OpenCreditsMenu()
+    {
+        creditsMenu.SetActive(true);
+        aboutMenu.SetActive(false);
+       
+        eventSystem.SetSelectedGameObject(backButtonCredit);
     }
 
     public void OpenPauseMenu()
