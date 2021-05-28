@@ -63,6 +63,7 @@ public class SystemsController : MonoBehaviour
         playerScript = player.GetComponent<CharacterMovement>();
         animScript = animator.GetComponent<AnimationController>();
         treeScript = treeTouch.GetComponent<TreeTouch>();
+        Application.targetFrameRate = 30;
     }
 
     void Update()

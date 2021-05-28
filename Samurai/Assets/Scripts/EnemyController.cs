@@ -6,7 +6,7 @@ public class EnemyController : MonoBehaviour
 {
     private Vector3 targetPos;
     private Vector3 newTargetPos;
-    public float speed = 1f;
+    private float speed = 0.05f; //1
     public bool aggroed = false;
     public bool isAttacking = false;
     private float attackRange = 3f;
@@ -35,7 +35,7 @@ public class EnemyController : MonoBehaviour
         systemScript = system.GetComponent<SystemsController>();
         particles = gameObject.transform.GetChild(0).GetComponent<ParticleSystemRenderer>().material;
         defaultColor = particles.color;
-        step = speed * Time.deltaTime;
+        //step = speed * Time.fixedDeltaTime;
     }
 
     void Update()
@@ -100,7 +100,7 @@ public class EnemyController : MonoBehaviour
             newTargetPos = new Vector3(targetPos.x, transform.position.y, targetPos.z);
             if (!systemScript.GetIsFinalAttacking() && !isAttacking)
             {
-                transform.position = Vector3.MoveTowards(transform.position, newTargetPos, step);
+                transform.position = Vector3.MoveTowards(transform.position, newTargetPos, speed * Time.fixedDeltaTime);
                 transform.LookAt(newTargetPos);
             }
 

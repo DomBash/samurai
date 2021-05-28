@@ -143,7 +143,7 @@ public class CharacterMovement : MonoBehaviour
                     }
                     Rotate(dashDirection);
 
-                    moveDirection = (40f * -transform.right);
+                    moveDirection = (40f * -transform.right); //40f - 500f
                     dodgeTime = 5;
 
                     Dodge();
@@ -230,7 +230,7 @@ public class CharacterMovement : MonoBehaviour
 
     void Dodge()
     {
-        characterController.Move(moveDirection * Time.deltaTime);
+        characterController.Move(moveDirection * Time.fixedDeltaTime);
         dodgeTime -= 1;
     }
 
